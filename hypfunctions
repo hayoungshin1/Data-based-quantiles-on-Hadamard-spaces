@@ -44,7 +44,7 @@ def log(p, x):
     """
     p: point in H^n (1,n+1)
     x: batch of points in H^n (b,n+1)
-    out: b vectors in T_pM (b,n+1)
+    out: each log_p(x) (b,n+1)
     """
     p=p/torch.sqrt(-ip(p,p)) # reprojects p onto the manifold, for precision
     x=x/torch.unsqueeze(torch.sqrt(-ip(x,x)),dim=1) # reprojects x onto the manifold, for precision
@@ -55,13 +55,15 @@ def log(p, x):
     t=torch.unsqueeze(mag(v),1)
     unitv=v/t
     out=torch.unsqueeze(theta,1)*unitv
+    #for j in [i for i, x in enumerate(t<1e-5) if x]: # log should be 0 when p=x_j
+    #    out[j,:]=0
     return out
 
 def alog(x, p):
     """
     x: batch of points in H^n (b,n+1)
     p: point in H^n (1,n+1)
-    out: b vectors, 1 in each T_xM (b,n+1)
+    out: each log_x(p) (b,n+1)
     """
     p=p/torch.sqrt(-ip(p,p)) # reprojects p onto the manifold, for precision
     x=x/torch.unsqueeze(torch.sqrt(-ip(x,x)),dim=1) # reprojects x onto the manifold, for precision
@@ -72,13 +74,15 @@ def alog(x, p):
     t=torch.unsqueeze(mag(v),1)
     unitv=v/t
     out=torch.unsqueeze(theta,1)*unitv
+    #for j in [i for i, x in enumerate(t<1e-5) if x]: # log should be 0 when p=x_j
+    #    out[j,:]=0
     return out
 
 def newlog(y, z):
     """
     y: batch of points in H^n (b,n+1)
     z: point in H^n (b,n+1)
-    out: b vectors, 1 in each T_yM (b,n+1)
+    out: each log_y(z) (b,n+1)
     """
     y=y/torch.unsqueeze(torch.sqrt(-ip(y,y)),dim=1) # reprojects y onto the manifold, for precision
     z=z/torch.unsqueeze(torch.sqrt(-ip(z,z)),dim=1) # reprojects z onto the manifold, for precision
@@ -89,6 +93,8 @@ def newlog(y, z):
     t=torch.unsqueeze(mag(v),1)
     unitv=v/t
     out=torch.unsqueeze(theta,1)*unitv
+    #for j in [i for i, y in enumerate(t<1e-20) if y]: # log should be 0 when y_j=z_j
+    #    out[j,:]=0
     return out
 
 def dist(p, x):
