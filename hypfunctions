@@ -55,8 +55,6 @@ def log(p, x):
     t=torch.unsqueeze(mag(v),1)
     unitv=v/t
     out=torch.unsqueeze(theta,1)*unitv
-    #for j in [i for i, x in enumerate(t<1e-5) if x]: # log should be 0 when p=x_j
-    #    out[j,:]=0
     return out
 
 def alog(x, p):
@@ -74,8 +72,6 @@ def alog(x, p):
     t=torch.unsqueeze(mag(v),1)
     unitv=v/t
     out=torch.unsqueeze(theta,1)*unitv
-    #for j in [i for i, x in enumerate(t<1e-5) if x]: # log should be 0 when p=x_j
-    #    out[j,:]=0
     return out
 
 def newlog(y, z):
@@ -93,8 +89,6 @@ def newlog(y, z):
     t=torch.unsqueeze(mag(v),1)
     unitv=v/t
     out=torch.unsqueeze(theta,1)*unitv
-    #for j in [i for i, y in enumerate(t<1e-20) if y]: # log should be 0 when y_j=z_j
-    #    out[j,:]=0
     return out
 
 def dist(p, x):
