@@ -182,8 +182,7 @@ def quantile(xinv, xhalf, xhalfinv, x, beta, xi, tol=1e-100):
     step=-grad(current_lxp,xhalf,xhalfinv,current_p,x,beta,xix)
     step/=mag(current_pinv,step)
     count=0
-    acount=0
-    while lr>1e-100 and count<1000 and acount<1000:
+    while lr>1e-100 and count<1000:
         new_p=exp(current_phalf,current_phalfinv,lr*step).float()
         new_pinv=torch.linalg.inv(new_p)
         new_phalf=matrix_sqrt(new_p)
@@ -201,9 +200,8 @@ def quantile(xinv, xhalf, xhalfinv, x, beta, xi, tol=1e-100):
             step=-grad(current_lxp,xhalf,xhalfinv,current_p,x,beta,xix)
             step/=mag(current_pinv,step)
             lr=1.1*lr # try to speed up convergence by increasing learning rate
-            count+=1
         else:
             lr=lr/2
-            acount+=1
+            count+=1
     out=current_p
     return out
