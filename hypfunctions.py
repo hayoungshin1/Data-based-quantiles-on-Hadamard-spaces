@@ -226,8 +226,7 @@ def quantile(x, beta, xi, t, approx, tol=1e-100):
     step=-grad(current_p,x,beta,xi,t,approx)
     step/=mag(step)
     count=0
-    acount=0
-    while lr>1e-100 and count<1000 and acount<1000:
+    while lr>1e-100 and count<1000:
         new_p=exp(current_p,lr*step).float()
         new_loss=loss(new_p,x,beta,xi,t)
         if (new_loss<=current_loss):
@@ -237,10 +236,9 @@ def quantile(x, beta, xi, t, approx, tol=1e-100):
             step=-grad(current_p,x,beta,xi,t,approx)
             step/=mag(step)
             lr=1.1*lr # try to speed up convergence by increasing learning rate
-            count+=1
         else:
             lr=lr/2
-            acount+=1
+            count+=1
     out=current_p
     return out
 
