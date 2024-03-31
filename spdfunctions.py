@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 
 def ip(pinv, v1, v2):
     """
-    pinv: one or a batch of p^{-1}, directly inputed to save time (1,n,n), or (b,n,n)
-    v1, v2: batches of tangent vectors in T_pM (b,n,n)
+    pinv: one or a batch of p^{-1}, directly inputed to save time (1,m,m), or (b,m,m)
+    v1, v2: batches of tangent vectors in T_pM (b,m,m)
     out: inner products (b)
     """
     t1=torch.matmul(pinv,v1)
@@ -16,8 +16,8 @@ def ip(pinv, v1, v2):
 
 def mag(pinv, v1):
     """
-    pinv: one or a batch of p^{-1}, directly inputed to save time (1,n,n), or (b,n,n)
-    v1: batch of tangent vectors in T_pM (b,n,n)
+    pinv: one or a batch of p^{-1}, directly inputed to save time (1,m,m), or (b,m,m)
+    v1: batch of tangent vectors in T_pM (b,m,m)
     out: size of each v1 (b)
     """
     sq=ip(pinv, v1, v1)
@@ -26,8 +26,8 @@ def mag(pinv, v1):
 
 def matrix_exp(A):
     """
-    A: batch of symmetric positive definite matrices (b,n,n)
-    out: matrix exponentials of those matrices (b,n,n)
+    A: batch of symmetric positive definite matrices (b,m,m)
+    out: matrix exponentials of those matrices (b,m,m)
     """
     A=(A+torch.transpose(A,-2,-1))/2
     L, V=torch.linalg.eig(A)
@@ -39,8 +39,8 @@ def matrix_exp(A):
 
 def matrix_log(A):
     """
-    A: batch of symmetric positive definite matrices (b,n,n)
-    out: matrix logs of those matrices (b,n,n)
+    A: batch of symmetric positive definite matrices (b,m,m)
+    out: matrix logs of those matrices (b,m,m)
     """
     A=(A+torch.transpose(A,-2,-1))/2
     L, V=torch.linalg.eig(A)
@@ -53,8 +53,8 @@ def matrix_log(A):
 
 def matrix_sqrt(A):
     """
-    A: batch of symmetric positive definite matrices (b,n,n)
-    out: matrix square roots of those matrices (b,n,n)
+    A: batch of symmetric positive definite matrices (b,m,m)
+    out: matrix square roots of those matrices (b,m,m)
     """
     A=(A+torch.transpose(A,-2,-1))/2
     L, V=torch.linalg.eig(A)
@@ -67,9 +67,9 @@ def matrix_sqrt(A):
 
 def exp(phalf, phalfinv, v):
     """
-    phalf: p^{1/2}, directly inputed to save time (1,n,n)
-    phalfinv: p^{-1/2}, directly inputed to save time (1,n,n)
-    v: batch of tangent vectors in each T_pM (b,n,n)
+    phalf: p^{1/2}, directly inputed to save time (1,m,m)
+    phalfinv: p^{-1/2}, directly inputed to save time (1,m,m)
+    v: batch of tangent vectors in each T_pM (b,m,m)
     out: each exp_p(v) (b)
     """
     v=(v+torch.transpose(v,-2,-1))/2
@@ -80,9 +80,9 @@ def exp(phalf, phalfinv, v):
 
 def log(xhalf, xhalfinv, p):
     """
-    xhalf: batch of x^{1/2}, directly inputed to save time (b,n,n)
-    xhalfinv: batch of x^{-1/2}, directly inputed to save time (b,n,n)
-    p: point in P_n (1,n,n)
+    xhalf: batch of x^{1/2}, directly inputed to save time (b,m,m)
+    xhalfinv: batch of x^{-1/2}, directly inputed to save time (b,m,m)
+    p: point in P_n (1,m,m)
     out: each log_x(p) (b)
     """
     p=(p+torch.transpose(p,-2,-1))/2
@@ -93,10 +93,10 @@ def log(xhalf, xhalfinv, p):
 
 def direct(x, xi):
     """
-    x: batch of points in P_n (b,n,n)
+    x: batch of points in P_n (b,m,m)
     xi: either a unit vector in T_IM (n,n), where I is the nxn identity, or '+' or '-', which represent the
     unit vectors I/sqrt(n), -I/sqrt(n) in T_IM
-    out: each xi_x (b,n,n)
+    out: each xi_x (b,m,m)
     """
     if xi=='+':
         out=x/np.sqrt(x.shape[-1])
@@ -111,10 +111,10 @@ def direct(x, xi):
 
 def loss(lxp, xinv, beta, xix):
     """
-    lxp: each log_x(p), directly inputed to save time (b,n,n)
-    xinv: batch of x^{-1}, directly inputed to save time (b,n,n)
+    lxp: each log_x(p), directly inputed to save time (b,m,m)
+    xinv: batch of x^{-1}, directly inputed to save time (b,m,m)
     beta: real number in [0,1)
-    xix: each xi_x, directly inputed to save time (b,n,n)
+    xix: each xi_x, directly inputed to save time (b,m,m)
     out: data-based loss (b)
     """
     out=torch.mean(mag(xinv,lxp)-ip(xinv,beta*xix,lxp))
@@ -122,11 +122,11 @@ def loss(lxp, xinv, beta, xix):
 
 def pt(lxp, xhalf, xhalfinv, v):
     """
-    lxp: each log_x(p), directly inputed to save time (b,n,n)
-    xhalf: batch of x^{1/2}, directly inputed to save time (b,n,n)
-    xhalfinv: batch of x^{-1/2}, directly inputed to save time (b,n,n)
-    v: batch of tangent vectors in each T_xM (b,n,n)
-    out: parallel transport from x to p (b,n,n)
+    lxp: each log_x(p), directly inputed to save time (b,m,m)
+    xhalf: batch of x^{1/2}, directly inputed to save time (b,m,m)
+    xhalfinv: batch of x^{-1/2}, directly inputed to save time (b,m,m)
+    v: batch of tangent vectors in each T_xM (b,m,m)
+    out: parallel transport from x to p (b,m,m)
     """
     big=torch.matmul(torch.matmul(xhalfinv,lxp),xhalfinv)/2
     big=torch.matmul(torch.matmul(xhalf,matrix_exp(big)),xhalfinv)
@@ -136,14 +136,14 @@ def pt(lxp, xhalf, xhalfinv, v):
 
 def grad(lxp, xhalf, xhalfinv, p, x, beta, xix):
     """
-    lxp: each log_x(p), directly inputed to save time (b,n,n)
-    xhalf: batch of x^{1/2}, directly inputed to save time (b,n,n)
-    xhalfinv: batch of x^{-1/2}, directly inputed to save time (b,n,n)
-    p: point in P_n (1,n,n)
-    x: batch of points in P_n (b,n,n)
+    lxp: each log_x(p), directly inputed to save time (b,m,m)
+    xhalf: batch of x^{1/2}, directly inputed to save time (b,m,m)
+    xhalfinv: batch of x^{-1/2}, directly inputed to save time (b,m,m)
+    p: point in P_n (1,m,m)
+    x: batch of points in P_n (b,m,m)
     beta: real number in [0,1)
-    xix: each xi_x, directly inputed to save time (b,n,n)
-    out: approximate gradient in T_pM (1,n,n)
+    xix: each xi_x, directly inputed to save time (b,m,m)
+    out: approximate gradient in T_pM (1,m,m)
     """
     pinv=torch.linalg.inv(p)
     phalf=matrix_sqrt(p)
@@ -161,14 +161,14 @@ def grad(lxp, xhalf, xhalfinv, p, x, beta, xix):
 
 def quantile(xinv, xhalf, xhalfinv, x, beta, xi, tol=1e-100):
     """
-    xinv: batch of x^{-1}, directly inputed to save time (b,n,n)
-    xhalf: batch of x^{1/2}, directly inputed to save time (b,n,n)
-    xhalfinv: batch of x^{-1/2}, directly inputed to save time (b,n,n)
-    x: batch of points in P_n (b,n,n)
+    xinv: batch of x^{-1}, directly inputed to save time (b,m,m)
+    xhalf: batch of x^{1/2}, directly inputed to save time (b,m,m)
+    xhalfinv: batch of x^{-1/2}, directly inputed to save time (b,m,m)
+    x: batch of points in P_n (b,m,m)
     beta: real number in [0,1)
     xi: either a unit vector in T_IM (n,n), where I is the nxn identity, or '+' or '-', which represent the
     unit vectors I/sqrt(n), -I/sqrt(n) in T_IM
-    out: (beta,xi)-quantile (1,n,n)
+    out: (beta,xi)-quantile (1,m,m)
     """
     xix=direct(x,xi)
     current_p=torch.unsqueeze(torch.eye(x.shape[-1]),0) # initial estimate for quantile
