@@ -8,9 +8,6 @@ xinv=torch.linalg.inv(x)
 xhalf=matrix_sqrt(x)
 xhalfinv=torch.linalg.inv(xhalf)
 
-torch.max(mag(xinv,log(xhalf,xhalfinv,torch.unsqueeze(torch.eye(x.shape[-1]),0))))
-torch.max(mag(torch.unsqueeze(torch.eye(x.shape[-1]),0),log(torch.unsqueeze(torch.eye(x.shape[-1]),0),torch.unsqueeze(torch.eye(x.shape[-1]),0),x)))
-
 from dipy.data import get_sphere
 from dipy.viz import window, actor
 
@@ -26,13 +23,13 @@ for j in range(4):
         xi1='-'
         xi2='+'
     elif j==1:
-        xi1=torch.tensor([[0,1,0],[1,0,0],[0,0,0]])/np.sqrt(2)
+        xi1=torch.tensor([[[0,1,0],[1,0,0],[0,0,0]]])/np.sqrt(2)
         xi2=-xi1
     elif j==2:
-        xi1=torch.tensor([[0,0,1],[0,0,0],[1,0,0]])/np.sqrt(2)
+        xi1=torch.tensor([[[0,0,1],[0,0,0],[1,0,0]]])/np.sqrt(2)
         xi2=-xi1
     elif j==3:
-        xi1=torch.tensor([[0,0,0],[0,0,1],[0,1,0]])/np.sqrt(2)
+        xi1=torch.tensor([[[0,0,0],[0,0,1],[0,1,0]]])/np.sqrt(2)
         xi2=-xi1
     xis=int((len(betas)-1)/2)*[xi1]+int((len(betas)+1)/2)*[xi2]
     quantiles=quantile(xinv, xhalf, xhalfinv, x, betas[0], xis[0])
