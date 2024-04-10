@@ -20,8 +20,8 @@ for i in range(3):
 finalcfa=np.zeros((len(betas),len(betas),1,3))
 for j in range(4):
     if j==0:
-        xi1='-'
-        xi2='+'
+        xi1=torch.tensor([[[1,0,0],[0,1,0],[0,0,1]]])/np.sqrt(3)
+        xi2=-xi1
     elif j==1:
         xi1=torch.tensor([[[0,1,0],[1,0,0],[0,0,0]]])/np.sqrt(2)
         xi2=-xi1
