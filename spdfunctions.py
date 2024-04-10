@@ -91,22 +91,27 @@ def log(xhalf, xhalfinv, p):
     out=(out+torch.transpose(out,-2,-1))/2
     return out
 
-def direct(x, xi):
+def direct(xhalf, xhalfinv, xi):
     """
-    x: batch of points in P_n (b,m,m)
-    xi: either a unit vector in T_IM (n,n), where I is the nxn identity, or '+' or '-', which represent the
-    unit vectors I/sqrt(n), -I/sqrt(n) in T_IM
+    xhalf: batch of x^{1/2}, directly inputed to save time (b,m,m)
+    xhalfinv: batch of x^{-1/2}, directly inputed to save time (b,m,m)
+    xi: a unit vector in T_IM (n,n), where I is the nxn identity (1,m,m)
     out: each xi_x (b,m,m)
     """
-    if xi=='+':
-        out=x/np.sqrt(x.shape[-1])
-    elif xi=='-':
-        out=-x/np.sqrt(x.shape[-1])
-    else:
-        big=10
-        inner=exp(torch.unsqueeze(torch.eye(x.shape[-1]),0),torch.unsqueeze(torch.eye(x.shape[-1]),0),big*xi)
-        out=log(xhalf,xhalfinv,inner)
-        out/=torch.unsqueeze(torch.unsqueeze(mag(xinv,out),-1),-1)
+    D, V=torch.linalg.eig(xi)
+    D=torch.real(D)
+    V=torch.real(V)
+    evals,indices=torch.sort(D,descending=True)
+    evecs=torch.zeros_like(V)
+    for i in range(D.shape[0]):
+        evecs[i,:,:]=V[i,:,indices[i,:]]
+    W=torch.matmul(xhalfinv,evecs)
+    W[:,:,0]/=torch.squeeze(torch.sqrt(torch.matmul(torch.transpose(W[:,:,0:1],-2,-1),W[:,:,0:1])),2)
+    for k in range(1,W.shape[-1]):
+        W[:,:,k]-=torch.squeeze(torch.matmul(W[:,:,0:k],torch.matmul(torch.transpose(W[:,:,0:k],1,2),W[:,:,k:k+1])),2)
+        W[:,:,k]/=torch.squeeze(torch.sqrt(torch.matmul(torch.transpose(W[:,:,k:k+1],-2,-1),W[:,:,k:k+1])),2)
+    out=torch.matmul(torch.matmul(torch.matmul(torch.matmul(xhalf,W),torch.diag_embed(evals)),torch.transpose(W,1,2)),xhalf)
+    out=(out+torch.transpose(out,-2,-1))/2
     return out
 
 def loss(lxp, xinv, beta, xix):
@@ -170,7 +175,7 @@ def quantile(xinv, xhalf, xhalfinv, x, beta, xi, tol=1e-100):
     unit vectors I/sqrt(n), -I/sqrt(n) in T_IM
     out: (beta,xi)-quantile (1,m,m)
     """
-    xix=direct(x,xi)
+    xix=direct(xhalf,xhalfinv,xi)
     current_p=torch.unsqueeze(torch.eye(x.shape[-1]),0) # initial estimate for quantile
     current_pinv=torch.linalg.inv(current_p)
     current_phalf=matrix_sqrt(current_p)
