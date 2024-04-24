@@ -148,7 +148,9 @@ def pt(x, v, p):
     v: batch of vectors in tangent spaces at x (b,n+1)
     out: v parallel transported to T_pH^n (b,n+1)
     """
-    out=v-torch.unsqueeze(ip(alog(x,p),v)/(adist(x,p))**2,1)*(log(p,x)+alog(x,p))
+    lxp=alog(x,p)
+    dxp=mag(lxp)
+    out=v-torch.unsqueeze(ip(lxp,v)/(dxp)**2,1)*(log(p,x)+lxp)
     return out
 
 def grad(p, x, beta, xi, t, approx):
@@ -161,8 +163,8 @@ def grad(p, x, beta, xi, t, approx):
     approx: 1 for true gradient, 2 uses parallel transport of xi_x, and 3 uses xi_p
     out: gradient (1,n+1)
     """
-    dpx=dist(p,x)
     lpx=log(p,x)
+    dpx=mag(lpx)
     unitpx=lpx/torch.unsqueeze(dpx,1)
     if approx==1:
         if t=='p':
