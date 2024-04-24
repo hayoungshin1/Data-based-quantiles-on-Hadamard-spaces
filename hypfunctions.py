@@ -91,24 +91,6 @@ def newlog(y, z):
     out=torch.unsqueeze(theta,1)*unitv
     return out
 
-def dist(p, x):
-    """
-    p: point in H^n (1,n+1)
-    x: batch of points in H^n (b,n+1)
-    out: (b)
-    """
-    out=mag(log(p, x))
-    return out
-
-def adist(x, p):
-    """
-    x: batch of points in H^n (b,n+1)
-    p: point in H^n (1,n+1)
-    out: (b)
-    """
-    out=mag(alog(x, p))
-    return out
-
 def newdist(y, z):
     """
     y: batch of points in H^n (b,n+1)
@@ -150,9 +132,13 @@ def loss(p, x, beta, xi, t):
     t: 'p' or 'd'
     """
     if t=='p':
-        out=torch.mean(dist(p,x)+ip(beta*direct(p,xi),log(p,x)))
+        lpx=log(p,x)
+        dpx=mag(lpx)
+        out=torch.mean(dpx+ip(beta*direct(p,xi),lpx))
     elif t=='d':
-        out=torch.mean(adist(x,p)-ip(beta*adirect(x,xi),alog(x,p)))
+        lxp=alog(x,p)
+        dxp=mag(lxp)
+        out=torch.mean(dxp-ip(beta*adirect(x,xi),lxp))
     return out
 
 def pt(x, v, p):
