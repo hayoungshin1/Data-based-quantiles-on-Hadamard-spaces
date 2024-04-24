@@ -27,17 +27,16 @@ def mag(v1):
 def exp(p, v):
     """
     p: point in H^n (1,n+1)
-    v: vector in T_pM (1,n+1)
-    out: (1,n+1)
+    v: batch of vectors in T_pM (b,n+1)
+    out: (b,n+1)
     """
     p=p/torch.sqrt(-ip(p,p)) # reprojects p onto the manifold, for precision
-    theta=mag(v)
-    if theta==0:
-        out=p
-    else:
-        unitv=v/theta
-        out=torch.cosh(theta)*p+torch.sinh(theta)*unitv
-    out=out/torch.sqrt(-ip(out,out)) # reprojects out onto the manifold, for precision
+    theta=torch.unsqueeze(mag(v),1)
+    unitv=v/theta
+    out=torch.cosh(theta)*p+torch.sinh(theta)*unitv
+    for each in ((theta==0).nonzero())[:,0]:
+        out[each,:]=torch.squeeze(p,0)
+    out=out/torch.unsqueeze(torch.sqrt(-ip(out,out)),1) # reprojects out onto the manifold, for precision
     return out
 
 def log(p, x):
