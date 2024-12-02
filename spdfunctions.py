@@ -91,21 +91,24 @@ def log(xhalf, xhalfinv, p):
     out=(out+torch.transpose(out,-2,-1))/2
     return out
 
-def direct(xhalf, xhalfinv, xi):
+def direct(xhalf, xhalfinv, yhalf, yhalfinv, xiy):
     """
     xhalf: batch of x^{1/2}, directly inputed to save time (b,m,m)
     xhalfinv: batch of x^{-1/2}, directly inputed to save time (b,m,m)
-    xi: a unit vector in T_IM (n,n), where I is the nxn identity (1,m,m)
+    yhalf: y^{1/2}, directly inputed to save time, where y is a point in M (1,m,m)
+    yhalfinv: y^{-1/2}, directly inputed to save time, where y is a point in M (1,m,m)
+    xiy: unit vector in T_yM corresponding to xi (1,m,m)
     out: each xi_x (b,m,m)
     """
-    D, V=torch.linalg.eig(xi)
+    prod=torch.matmul(torch.matmul(yhalfinv,xiy),yhalfinv)
+    D, V=torch.linalg.eig(prod)
     D=torch.real(D)
     V=torch.real(V)
     evals,indices=torch.sort(D,descending=True)
     evecs=torch.zeros_like(V)
     for i in range(D.shape[0]):
         evecs[i,:,:]=V[i,:,indices[i,:]]
-    W=torch.matmul(xhalfinv,evecs)
+    W=torch.matmul(torch.matmul(xhalfinv,yhalf),evecs)
     W[:,:,0]/=torch.squeeze(torch.sqrt(torch.matmul(torch.transpose(W[:,:,0:1],-2,-1),W[:,:,0:1])),2)
     for k in range(1,W.shape[-1]):
         W[:,:,k]-=torch.squeeze(torch.matmul(W[:,:,0:k],torch.matmul(torch.transpose(W[:,:,0:k],1,2),W[:,:,k:k+1])),2)
@@ -164,18 +167,20 @@ def grad(lxp, xhalf, xhalfinv, p, x, beta, xix):
     out=(out+torch.transpose(out,-2,-1))/2
     return out
 
-def quantile(xinv, xhalf, xhalfinv, x, beta, xi, tol=1e-100):
+def quantile(xinv, xhalf, xhalfinv, x, beta, yhalf, yhalfinv, xiy, tol=1e-100):
     """
     xinv: batch of x^{-1}, directly inputed to save time (b,m,m)
     xhalf: batch of x^{1/2}, directly inputed to save time (b,m,m)
     xhalfinv: batch of x^{-1/2}, directly inputed to save time (b,m,m)
     x: batch of points in P_n (b,m,m)
     beta: real number in [0,1)
-    xi: either a unit vector in T_IM (n,n), where I is the nxn identity, or '+' or '-', which represent the
-    unit vectors I/sqrt(n), -I/sqrt(n) in T_IM
+    yhalf: y^{1/2}, directly inputed to save time, where y is a point in M (1,m,m)
+    yhalfinv: y^{-1/2}, directly inputed to save time, where y is a point in M (1,m,m)
+    xiy: unit vector in T_yM corresponding to xi (1,m,m)
     out: (beta,xi)-quantile (1,m,m)
     """
-    xix=direct(xhalf,xhalfinv,xi)
+    #xix=direct(x,xi)
+    xix=direct(xhalf,xhalfinv,yhalf,yhalfinv,xiy)
     current_p=torch.unsqueeze(torch.eye(x.shape[-1]),0) # initial estimate for quantile
     current_pinv=torch.linalg.inv(current_p)
     current_phalf=matrix_sqrt(current_p)
@@ -194,6 +199,7 @@ def quantile(xinv, xhalf, xhalfinv, x, beta, xi, tol=1e-100):
         new_phalfinv=torch.linalg.inv(new_phalf)
         new_lxp=log(xhalf,xhalfinv,new_p)
         new_loss=loss(new_lxp,xinv,beta,xix)
+        #print(new_loss)
         if (new_loss<=current_loss):
             old_p=current_p
             current_p=new_p
