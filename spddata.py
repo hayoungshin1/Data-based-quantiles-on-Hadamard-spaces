@@ -6,6 +6,8 @@ import dipy.reconst.dti as dti
 from dipy.data import get_fnames
 hardi_fname, hardi_bval_fname, hardi_bvec_fname = get_fnames('stanford_hardi')
 data, affine = load_nifti(hardi_fname)
+from dipy.data import get_sphere
+from dipy.viz import window, actor
 
 bvals, bvecs = read_bvals_bvecs(hardi_bval_fname, hardi_bvec_fname)
 gtab = gradient_table(bvals, bvecs)
@@ -22,10 +24,8 @@ FA[np.isnan(FA)] = 0
 FA = np.clip(FA, 0, 1)
 RGB = color_fa(FA, tenfit.evecs)
 
-from dipy.data import get_sphere
 sphere = get_sphere('repulsion724')
 
-from dipy.viz import window, actor
 
 scene = window.Scene()
 
