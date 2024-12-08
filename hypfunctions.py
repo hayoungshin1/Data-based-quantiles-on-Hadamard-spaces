@@ -93,7 +93,7 @@ def newlog(y, z):
 def newdist(y, z):
     """
     y: batch of points in H^n (b,n+1)
-    z: point in H^n (b,n+1)
+    z: batch of points in H^n (b,n+1)
     out: (b)
     """
     out=mag(newlog(y, z))
