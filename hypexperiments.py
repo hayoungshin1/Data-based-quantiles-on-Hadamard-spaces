@@ -49,7 +49,7 @@ for i in range(4):
 
 m=4
 
-betas=[0.5]
+betas=[0.8]
 angles=[k*2*np.pi/m for k in range(m)]
 xis=[torch.tensor([[np.cos(angles[k]),np.sin(angles[k])]]) for k in range(m)]
 
