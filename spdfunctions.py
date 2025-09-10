@@ -70,7 +70,7 @@ def exp(phalf, phalfinv, v):
     phalf: p^{1/2}, directly inputed to save time (1,m,m)
     phalfinv: p^{-1/2}, directly inputed to save time (1,m,m)
     v: batch of tangent vectors in each T_pM (b,m,m)
-    out: each exp_p(v) (b)
+    out: each exp_p(v) (b,m,m)
     """
     v=(v+torch.transpose(v,-2,-1))/2
     out=matrix_exp(torch.matmul(torch.matmul(phalfinv,v),phalfinv))
@@ -83,7 +83,7 @@ def log(xhalf, xhalfinv, p):
     xhalf: batch of x^{1/2}, directly inputed to save time (b,m,m)
     xhalfinv: batch of x^{-1/2}, directly inputed to save time (b,m,m)
     p: point in P_n (1,m,m)
-    out: each log_x(p) (b)
+    out: each log_x(p) (b,m,m)
     """
     p=(p+torch.transpose(p,-2,-1))/2
     out=matrix_log(torch.matmul(torch.matmul(xhalfinv,p),xhalfinv))
