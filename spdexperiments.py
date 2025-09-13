@@ -85,7 +85,7 @@ scene.background((255,255,255))
 
 window.show(scene)
 
-window.record(scene, n_frames=1, out_path='wholequantiles4.png', size=(2000, 2000))
+window.record(scene, n_frames=1, out_path='wholequantiles.png', size=(2000, 2000))
 
 scene.clear()
 
